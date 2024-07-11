@@ -12,6 +12,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -33,7 +36,7 @@ jobs:
       - name: Compare with stored release
         id: compare_release
         run: |
-          stored_release=$(cat stored_release.txt)
+          stored_release=$(cat stored_release.txt 2>/dev/null || echo "")
           latest_release=${{ steps.get_release.outputs.tag_name }}
           if [ "$stored_release" != "$latest_release" ]; then
             echo "New release detected: $latest_release"
@@ -44,6 +47,7 @@ jobs:
           fi
 
       - name: Build and push Docker image
+        if: steps.compare_release.outputs.tag_name != ''
         uses: docker/build-push-action@v6
         with:
           push: true

@@ -38,7 +38,6 @@ jobs:
         run: |
           pwd
           ls -la
-          cat stored_release.txt
           stored_release=$(cat stored_release.txt 2>/dev/null || echo "")
           latest_release=$TAG_NAME
           if [ "$stored_release" != "$latest_release" ]; then

@@ -57,7 +57,7 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/flexget:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/flexget:$TAG_NAME
+            ${{ secrets.DOCKERHUB_USERNAME }}/flexget:"$TAG_NAME"
 
       - name: Set up Git
         run: |

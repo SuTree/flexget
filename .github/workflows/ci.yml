@@ -4,25 +4,46 @@ on:
   push:
     branches:
       - 'main'
+  schedule:
+    - cron: '0 0 * * *'  # 每天UTC时间的0:00执行一次，检测新版本
 
 jobs:
-  docker:
+  check-and-build:
     runs-on: ubuntu-latest
+
     steps:
-      -
-        name: Set up QEMU
+      - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
-      -
-        name: Set up Docker Buildx
+
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      -
-        name: Login to Docker Hub
+
+      - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      -
-        name: Build and push
+
+      - name: Get latest Flexget release
+        id: get_release
+        run: |
+          latest_release=$(curl -s https://api.github.com/repos/Flexget/Flexget/releases/latest | jq -r '.tag_name')
+          echo "::set-output name=tag_name::$latest_release"
+
+      - name: Compare with stored release
+        id: compare_release
+        run: |
+          stored_release=$(cat stored_release.txt)
+          latest_release=${{ steps.get_release.outputs.tag_name }}
+          if [ "$stored_release" != "$latest_release" ]; then
+            echo "New release detected: $latest_release"
+            echo "$latest_release" > stored_release.txt
+          else
+            echo "No new release found. Exiting."
+            exit 0  # 如果没有新版本，退出工作流程
+          fi
+
+      - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           push: true

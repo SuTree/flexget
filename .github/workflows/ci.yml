@@ -26,11 +26,11 @@ jobs:
       - name: Compare with stored release
         id: compare_release
         run: |
-          stored_release=${{ vars.VERSION }}
+          stored_release=$(cat stored_release.txt 2>/dev/null || echo "")
           latest_release=$TAG_NAME
           if [ "$stored_release" != "$latest_release" ]; then
             echo "New release detected: $latest_release"
-            echo "$latest_release" > ${{ vars.VERSION }}
+            echo "$latest_release" > stored_release.txt
           else
             echo "No new release found. Exiting."
             exit 0  # 如果没有新版本，退出工作流程

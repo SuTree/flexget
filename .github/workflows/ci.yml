@@ -36,7 +36,7 @@ jobs:
             echo "$latest_release" > stored_release.txt
           else
             echo "No new release found. Exiting."
-            exit 0
+            exit 1
           fi
       -
         name: Set up QEMU

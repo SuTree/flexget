@@ -53,13 +53,11 @@ jobs:
       -
         name: Build and push
         uses: docker/build-push-action@v6
-        env:
-          Ver: $TAG_NAME
         with:
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/flexget:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/flexget:"$Ver"
+            ${{ secrets.DOCKERHUB_USERNAME }}/flexget:${{ env.TAG_NAME }}
 
       - name: Set up Git
         run: |

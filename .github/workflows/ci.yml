@@ -1,37 +1,22 @@
-name: ci
+   name: ci
 
-on:
-  push:
-    branches:
-      - 'main'
-  schedule:
-    - cron: '0 0 * * *'  # 每天UTC时间的0:00执行一次，检测新版本
-  workflow_dispatch:  # 手动触发的事件
-    inputs:
-      manual_trigger:
-        description: 'Manually trigger the workflow'
-        default: 'true'
-        required: false
+   on:
+     push:
+       branches:
+         - 'main'
+     schedule:
+       - cron: '0 0 * * *'  # 每天UTC时间的0:00执行一次，检测新版本
+     workflow_dispatch:  # 手动触发的事件
+       inputs:
+         manual_trigger:
+           description: 'Manually trigger the workflow'
+           default: 'true'
+           required: false
+
 jobs:
-  check-and-build:
+  docker:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
       - name: Get latest Flexget release
         id: get_release
         run: |
@@ -41,20 +26,29 @@ jobs:
       - name: Compare with stored release
         id: compare_release
         run: |
-          pwd
-          ls -la
-          stored_release=$(cat stored_release.txt 2>/dev/null || echo "")
+          stored_release=${{ vars.VERSION }}
           latest_release=$TAG_NAME
           if [ "$stored_release" != "$latest_release" ]; then
             echo "New release detected: $latest_release"
-            echo "$latest_release" > stored_release.txt
+            echo "$latest_release" > ${{ vars.VERSION }}
           else
             echo "No new release found. Exiting."
             exit 0  # 如果没有新版本，退出工作流程
           fi
-
-      - name: Build and push Docker image
-        if: steps.compare_release.outputs.tag_name != ''
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      -
+        name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      -
+        name: Build and push
         uses: docker/build-push-action@v6
         with:
           push: true

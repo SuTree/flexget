@@ -26,6 +26,8 @@ jobs:
       - name: Compare with stored release
         id: compare_release
         run: |
+          pwd
+          ls -la
           stored_release=$(cat stored_release.txt 2>/dev/null || echo "")
           latest_release=$TAG_NAME
           if [ "$stored_release" != "$latest_release" ]; then

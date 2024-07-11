@@ -36,6 +36,7 @@ jobs:
       - name: Compare with stored release
         id: compare_release
         run: |
+          pwd
           stored_release=$(cat stored_release.txt 2>/dev/null || echo "")
           latest_release=${{ steps.get_release.outputs.tag_name }}
           if [ "$stored_release" != "$latest_release" ]; then

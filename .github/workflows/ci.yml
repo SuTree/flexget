@@ -6,7 +6,12 @@ on:
       - 'main'
   schedule:
     - cron: '0 0 * * *'  # 每天UTC时间的0:00执行一次，检测新版本
-
+  workflow_dispatch:  # 手动触发的事件
+    inputs:
+      manual_trigger:
+        description: 'Manually trigger the workflow'
+        default: 'true'
+        required: false
 jobs:
   check-and-build:
     runs-on: ubuntu-latest
